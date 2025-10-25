@@ -1,0 +1,19 @@
+I want to refactor this Rust 2024 edition project into a CLI that uses Yew (Rust/WASM) to produce a Web App and serve it at a
+  specified port (-p/--port 9267 # default). The web app should be similar to the two projects found in symlinks under reference
+  dir (similar implementation). This Web App should create an SVG based on the image in images/punchcard.png where the
+  presented (simulated) punch card will start blank (no black rectangles punched out yet).  A standard HTML5/CSS3 input area is
+  provided for the user to type the punch card (assumming text to EBCIDIC encoding).  A similar file upload dialog is provided
+  to load an 80 byte binary file (for punching a binary record).  The use-case: As a student of IBM 1130 systems I want to
+  recreate the experience of punching a line of IBM 1130 Assembler source code to a punch card, one column at a time.  Since
+  some columns may be blank, there should be a highlight of the current column being punched.  Note that the text input is not a
+  line at a time but a character at a time.  For the binary use case, the user is simulating the effect of an IBM 1130
+  assembler producing one punch card of binary data (typically opcodes).  Look online for the format of both the IBM 1130
+  assembler source card image and object deck card image, and also provide UI options to generate an example of each.
+  Additonally, investigate if IBM 029 punch cards printed characters at the top of a source code punch card and add that as part
+  of the ouput.  For the binary example (or loaded-from-binary-file) cases, the punchcard print area remains blank.  Make the
+  code modular.  Create reusable Yew (React-like) components.  Use Test-Driven Development (Red/Green) testing.  Document this
+  work in docs/implementation.md with sections for: architecture, requirements, design, plan, and status.  Produce a useful
+  README.md.  Use Playwright (via MCP) to verify the UI and when working capture a screenshot into images/screenshot.png.
+  Ensure that the README.md links to (incorporates) this screenshot.  Ensure that a github workflow is configured to allow
+  publishing the finished app to a github page.  Include instructions in the README on how to configure this and include a link
+  to the live demo. 

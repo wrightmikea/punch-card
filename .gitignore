@@ -1,0 +1,8 @@
+/images/punchcard.png
+/reference
+/target
+/crates/web/dist
+.DS_Store
+*.log
+Cargo.lock
+

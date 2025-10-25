@@ -1,0 +1,16 @@
+[package]
+name = "punch-card-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+punch-card-core = { path = "../core" }
+clap = { workspace = true }
+tokio = { workspace = true }
+warp = { workspace = true }
+
+[[bin]]
+name = "punch-card"
+path = "src/main.rs"

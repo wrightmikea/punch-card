@@ -1,0 +1,33 @@
+[workspace]
+members = [
+    "crates/cli",
+    "crates/web",
+    "crates/core",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["Michael A Wright"]
+license = "MIT"
+
+[workspace.dependencies]
+# Core dependencies
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# CLI dependencies
+clap = { version = "4.5", features = ["derive"] }
+tokio = { version = "1.41", features = ["full"] }
+warp = "0.3"
+
+# Yew dependencies
+yew = { version = "0.21", features = ["csr"] }
+web-sys = { version = "0.3", features = ["File", "FileReader", "HtmlInputElement"] }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+gloo-file = "0.3"
+
+# Testing
+wasm-bindgen-test = "0.3"
