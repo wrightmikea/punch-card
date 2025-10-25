@@ -6,6 +6,8 @@ An interactive web-based IBM 1130 punch card simulator built with Yew (Rust/WASM
 
 *Interactive demo showing an IBM 1130 assembler source card with Hollerith punch patterns*
 
+**[Try the Live Demo →](https://wrightmikea.github.io/punch-card/)**
+
 ## Features
 
 ### Current (MVP)
@@ -23,11 +25,11 @@ An interactive web-based IBM 1130 punch card simulator built with Yew (Rust/WASM
 - ✅ **Text Mode** - Type up to 80 characters
 - ✅ **Binary Mode** - Object deck format with authentic 4:3 punch pattern
 - ✅ **Test-Driven Development** - 49 passing unit tests for core library (100% pass rate)
+- ✅ **GitHub Pages Deployment** - Live demo available at [wrightmikea.github.io/punch-card](https://wrightmikea.github.io/punch-card/)
 
 ### Planned Features
 - 🔄 Additional Examples - More IBM 1130 code samples
 - 🔄 CLI Server - Serve app on configurable port
-- 🔄 GitHub Pages deployment
 
 ## Technology Stack
 
@@ -61,15 +63,15 @@ trunk serve
 ### Production Build
 
 ```bash
-# Build optimized WASM bundle
+# Build optimized WASM bundle (outputs to docs/ for GitHub Pages)
 cd crates/web
 trunk build --release
 
-# Serve the dist directory
-cd dist
+# Serve the docs directory locally to test
+cd ../../docs
 python3 -m http.server 9267
 
-# Open browser to http://localhost:9267
+# Open browser to http://localhost:9267/punch-card/
 ```
 
 ### Running Tests
@@ -101,8 +103,11 @@ punch-card/
 │   │   ├── index.html      # HTML entry point
 │   │   └── styles.css      # Application styles
 │   └── cli/            # CLI server (planned)
-├── docs/
-│   └── implementation.md   # Detailed documentation
+├── docs/               # GitHub Pages build output
+├── notes/
+│   ├── implementation.md   # Detailed documentation
+│   ├── research.txt        # Research notes
+│   └── chat.txt            # Development chat logs
 ├── images/
 │   ├── screenshot.png      # Application screenshot
 │   └── punchcard.png       # Reference image
@@ -182,7 +187,7 @@ This project follows **Test-Driven Development (TDD)**:
 
 Comprehensive documentation is available:
 
-- **[Implementation Guide](./docs/implementation.md)** - Architecture, design, and development plan
+- **[Implementation Guide](./notes/implementation.md)** - Architecture, design, and development plan
 - **Code Comments** - Inline documentation throughout
 - **Test Examples** - 43 tests demonstrating usage
 
@@ -195,10 +200,9 @@ Requires WebAssembly support:
 
 ## Future Enhancements
 
-See [docs/implementation.md](./docs/implementation.md) for the complete roadmap:
+See [notes/implementation.md](./notes/implementation.md) for the complete roadmap:
 
 - CLI server with port configuration
-- GitHub Pages deployment
 - Additional IBM 1130 examples
 - Mobile responsive design improvements
 - Print functionality

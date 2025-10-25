@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="IBM 1130 Punch Card Simulator - Interactive punch card experience">
+    <title>IBM 1130 Punch Card Simulator</title>
+    <link rel="icon" href="/punch-card/favicon-8743256496478ffb.ico" integrity="sha384-dFN8sCGW/Iy2QN9UAA4onsyeL2GEevnKNWzY7ZVp8ohhcTlJ5ljPJfHAqnvMzKLz"/>
+    <link rel="stylesheet" href="/punch-card/styles-580f4e16a01c6996.css" integrity="sha384-5hFKCxgcZM8EgMeFoce7dkbNkVmWgkKgfsVV5yOnFKy6xp4E9dn1ywLSyzR6FJnK"/>
+<link rel="modulepreload" href="/punch-card/punch-card-web-66b5df7a90afda41.js" crossorigin="anonymous" integrity="sha384-IXEPUB8CVw0NYf6CrrEpdWLrhjdn+FZGjIrL1dWBEuT0hz4si0T8WdhYCjkXKsVG"><link rel="preload" href="/punch-card/punch-card-web-66b5df7a90afda41_bg.wasm" crossorigin="anonymous" integrity="sha384-QIs88VBUikHO0Np0A9MVv+VscBNsrxsA+hmurcAthuk7Aofa/El2tVVRTLHEVizg" as="fetch" type="application/wasm"></head>
+<body>
+    <noscript>
+        <p>This application requires JavaScript and WebAssembly to be enabled.</p>
+    </noscript>
+
+<script type="module">
+import init, * as bindings from '/punch-card/punch-card-web-66b5df7a90afda41.js';
+const wasm = await init({ module_or_path: '/punch-card/punch-card-web-66b5df7a90afda41_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script></body>
+</html>
