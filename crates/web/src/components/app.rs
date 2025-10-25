@@ -180,7 +180,6 @@ pub fn app() -> Html {
                 <div class="card-display">
                     <div class="card-info">
                         <span>{ format!("Column: {} / 80", text_value.len()) }</span>
-                        <span>{ format!("Type: {}", if card.card_type() == CardType::Text { "Text" } else { "Binary" }) }</span>
                         <span>{ format!("Punched: {}", card.punched_count()) }</span>
                     </div>
                     <PunchCard
@@ -194,7 +193,6 @@ pub fn app() -> Html {
                     <Tabs tabs={tabs} active_tab={(*active_tab).clone()} on_change={on_tab_change}>
                         // Tab A: Manual Input
                         <TabPanel id="manual" active_tab={(*active_tab).clone()}>
-                            <h2>{ "Manual Input" }</h2>
                             <TextInput
                                 value={(*text_value).clone()}
                                 on_change={on_text_change}
@@ -207,7 +205,6 @@ pub fn app() -> Html {
 
                         // Tab B: Examples
                         <TabPanel id="examples" active_tab={(*active_tab).clone()}>
-                            <h2>{ "Example Cards" }</h2>
                             <p>{ "Load example IBM 1130 punch cards:" }</p>
                             <div class="example-buttons">
                                 <button onclick={on_load_source_example}>
@@ -226,33 +223,41 @@ pub fn app() -> Html {
 
                         // Tab C: Save/Load
                         <TabPanel id="load" active_tab={(*active_tab).clone()}>
-                            <h2>{ "Save/Load Punch Card" }</h2>
+                            <div style="display: flex; gap: 20px;">
+                                // Save section (2/5 width = 40%)
+                                <div style="flex: 0 0 40%; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background: #f9f9f9;">
+                                    <h3 style="margin-top: 0;">{ "Save Card" }</h3>
+                                    <p style="font-size: 0.9em;">{ "Download the current punch card as a 108-byte binary file (IBM 1130 format: 72 columns × 12 rows, columns 73-80 not saved):" }</p>
+                                    <button onclick={on_save}>{ "Download Card (.bin)" }</button>
+                                </div>
 
-                            <h3>{ "Save Card" }</h3>
-                            <p>{ "Download the current punch card as a 108-byte binary file (IBM 1130 format: 72 columns × 12 rows, columns 73-80 not saved):" }</p>
-                            <button onclick={on_save}>{ "Download Card (.bin)" }</button>
+                                // Load section (2/5 width = 40%)
+                                <div style="flex: 0 0 40%; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background: #f9f9f9;">
+                                    <h3 style="margin-top: 0;">{ "Load Card" }</h3>
+                                    <p style="font-size: 0.9em;">{ "Upload a binary file to load as a punch card (108 bytes IBM 1130 format, or legacy 80-byte format):" }</p>
+                                    <div class="file-upload-container">
+                                        <input
+                                            type="file"
+                                            accept=".bin,.dat,.card"
+                                            onchange={on_file_change}
+                                        />
+                                    </div>
+                                    <p style="margin-top: 10px; font-size: 0.85em; color: #666;">
+                                        <strong>{ "Note:" }</strong>{ " Loaded binary cards will not display printed characters at the top of the card, only the punch hole patterns." }
+                                    </p>
+                                </div>
 
-                            <h3 style="margin-top: 20px;">{ "Load Card" }</h3>
-                            <p>{ "Upload a binary file to load as a punch card (108 bytes IBM 1130 format, or legacy 80-byte format):" }</p>
-                            <div class="file-upload-container">
-                                <input
-                                    type="file"
-                                    accept=".bin,.dat,.card"
-                                    onchange={on_file_change}
-                                />
+                                // Clear section (1/5 width = 20%)
+                                <div style="flex: 0 0 20%; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background: #f9f9f9;">
+                                    <h3 style="margin-top: 0;">{ "Clear Card" }</h3>
+                                    <p style="font-size: 0.9em;">{ "Reset the punch card to blank:" }</p>
+                                    <button onclick={on_clear.clone()}>{ "Clear Card" }</button>
+                                </div>
                             </div>
-                            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
-                                <strong>{ "Note:" }</strong>{ " Loaded binary cards will not display printed characters at the top of the card, only the punch hole patterns." }
-                            </p>
-
-                            <h3 style="margin-top: 20px;">{ "Clear Card" }</h3>
-                            <p>{ "Reset the punch card to blank:" }</p>
-                            <button onclick={on_clear.clone()}>{ "Clear Card" }</button>
                         </TabPanel>
 
                         // Tab D: About
                         <TabPanel id="about" active_tab={(*active_tab).clone()}>
-                            <h2>{ "About This Simulator" }</h2>
                             <p>
                                 { "This IBM 1130 Punch Card Simulator recreates the authentic experience of punching cards " }
                                 { "using Hollerith encoding from the IBM 029 keypunch era." }

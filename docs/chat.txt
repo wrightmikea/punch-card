@@ -17,3 +17,201 @@ I want to refactor this Rust 2024 edition project into a CLI that uses Yew (Rust
   Ensure that the README.md links to (incorporates) this screenshot.  Ensure that a github workflow is configured to allow
   publishing the finished app to a github page.  Include instructions in the README on how to configure this and include a link
   to the live demo. 
+---
+> improvements: (1) make header shorter so there is more vertical space for the UI components. (2) make the punch card image 
+the first element below the header, (3) the next part of the UI should have tabbed view with a tab for: (A) manual input (the 
+default view), (B) examples, (C) load, (D) about.  The keyboard input is under A.  The source and object images examples are 
+under B (add missing object code card image example), The load-from file widget is under C. A description of the UI with links
+ to the source code are under D.  Use MCP/Playwright to verify the views. 
+---
+more improvements needed: (1) the card image is not proportional and is missing the top right corner cut off -- make the UI 
+look more like the images/punchcard.png.  Also look at IBM branded 80-column punch cards online and make the UI higher 
+fidelity.  (2) The UI doesn't fit in a standard 100% zoom browser window view on my Mac.  There needs to be less wasted 
+vertical space.  This could be fixed by a combination of a smaller header, less space between elements, smaller font on the 
+tabs and buttons.  (3) the Examples tab Object Deck card does not look realistic. Punches (this applies to all use-cases) are 
+rectangular, not square.  They should be taller.  A typical object deck card should take up most of the card width, if no all.
+  Research IBM 1130 object deck card images online to understand if there are any empty columns generally, and if there is a 
+sequence number in some trailing (possibly leading) columns.  (4) The file upload function is not implemented yet, so your 
+statement "Everything is working perfectly and read for use!" is premature/incorrect.   Change the Load tab to Save/Load and 
+add the ability to download a punch card as an 80 byte binary file ("Save") and the ability to load such a file.  Also have a 
+clear button on this tab view.  (5) The about tab source section is missing an actual link to the github repo (which you can 
+infer from the git remote origin URL 
+---
+The simulated Punch Card image is too big (too tall--pushes the rest of the UI off the bottom of the view).  Make is shorter
+ (keeping the correct proportions).  Also, the image is too abstract.  Make it look a lot more like the images/punchcard.png, 
+which I've just updated with a better example.  Bug: the save/load feature does not work properly.  When I type A..Z0..9 and 
+save it, the bin file contains ASCII, not EBCDIC. When I load the file, the punches displayed do not match what was shown when
+ the card was saved.  The project is missing a LICENSE file which should contain "Copyright (c) 2025 Michael A. Wright" and 
+the M.I.T. license.   After fixing these issues, the README's UI screenshot needs to be updated.  Let me know when I can 
+perform acceptance testing (before you commit). 
+---
+iThe punchcard UI is too tall and too wide.  The top left corner should be cut at an angle and not filled with the same color
+ as the punch card.  The image should be transparent so the top left corner should be the background color.  To verify this, 
+change the UI background color to light blue.  Regarding the binary image it should be 80 bytes, encoded as IBM EBCDIC format 
+(each column is a hollerith valud, 0 = no punches, EBCDIC 0xF0 = "0" row punched (correct?), EBCDIC 0xC1 = "A" (I think) so 
+two holes (Hollerith) are punched, right?  Research EBCDIC and Hollereth online.  For binary data, each column is encoding a 
+byte (somehow) so one column = one byte saved to file, so file should be 80 bytes, right? 
+---
+look at images/current-vs-wanted.png to see what I want changed.  The card should be narrower for the vertical space used.  
+The corner cut off should be transparent (the card is on a light-blue background). The top half "current" is what you've 
+produced and the bottom "wanted" is what I asked for.  Please fix. 
+---
+I'm not seeing any improvement.  Is there a cache issue (use cache-busting headers). Notes: (1) the card should be centered,
+ on a light blue background, therefore there should be blue on the left and right 1/4 of the screen. (2) the card shown does 
+not match the reference images/punchcard.png, e.g., your card has columns repeating the image of a 0.  The reference image 
+shows that each column has a blank header (where two "control" bits may be punched) and then a 0, 1, ... 8, 9 printed on the 
+initial (empty) card.  Note that the column index appears in smaller font between the 0 and 1  rows and goes from 1 to 80.  
+Look closely at the images/punchcard.png and make the UI look as close to that as possible. 
+---
+no, it does not look correct yet.  Look closely at the screenshot.  Instead of clearly printed numbers on each row, it looks
+ like blurred 0s.  The card is stil stretched instead of being centered. It is not transparent.  The left top corner is a 
+printed diagonal line, not cut.  The triangle area is yellow, should be light blue.  There is no white space left or right of 
+the card (which should about 1/4 the viewport width of only light-blue background shown on each side.  Reconsider how you are 
+using CSS and possibly introduce a CDN-based grid CSS to build upon.  the column numbers 1,2,3, ... 78, 79, 80 do not appear 
+as requested between the 0 and 1 rows. look at close up details of what I want in images/wanted.png vs what you produced in 
+images/current.png.  Please fix and verify using MCP/Playright and update the README screenshot; let me test before commit 
+---
+not quite right (but improvements seen). look at images/details.png and note the current UI "card" has (1) print too 
+low--should be closer to top edge, (2) "control" bit punches too low, the first two punches (I'll call them -2 and -1) should 
+appear in the whitespace above the row of zeros, (3) the column index numbers 1..80 are above the row of zeros, should be 
+between the 0 and 1 rows (and much smaller font, they are "between" the rows, not a row of their own. (4) look at the bottom 
+half of the details.png to see a similar (more correct) photo of a (different brand of) a punch card with printed text for the
+ punched holes and pre-printed text for the row of zeros, the between-rows row of indexes, and the rows of 1s, 2s, etc.; 
+please make the UI "card" higher fidelity to the many examples I've provided. 
+---
+look at images/latest.png and note the differences from the images/details.png bottom image.  (1) there is no visible index 
+row between the 0 and 1 rows--should be visible, though small font;  (2) there is unwanted white space at the bottom of the 
+card--the 9 row should be very close to the bottom edge--when fixing this ensure the card proportions are correct (look at the
+ images/punchcard.png for reference--note that there is a second, small font, index row below the row of 9s at the bottom of 
+the reference punchcard image).; please fix all issues and let me know when I can re-test (before you commit) 
+---
+not 100% yet.  The top small font index row is pre-printed on top of the row of zeros--it should be between the row of zeros
+ and ones.  The bottom small font index row is missing--it should be between the row on nines and the bottom card edge; fix 
+and let me test before you commit. 
+---
+ much better; checkpoint: cargo fmt; fix clippy warnings; update docs; git add, commit (w/details), push 
+---
+okay, minor changes needed: look at docs/research.txt to see the specifications for the margins around the edges of a 
+standard IBM punch card.  In your UI, the printed characters for the first columns are cut off by the diagonal edge and tbis 
+visual artifact can be fixed by honoring the left margin between the card edge and first column punch hole (and top print 
+position).  Fix the margins on all four sides to conform with the standard; test via MCP/Playwright, update the screenshot in 
+the README, and let me test again before you commit 
+---
+the margins are slightly too large.  There is an unwanted row index pre-printed on the left side not visibile in the 
+reference images I provided.  So, make the margins slightly smaller and remove the 12, 11, 0, ... 9 row labels on the left (no
+ labels for rows). 
+---
+The examples tab object deck card (binary) button does not show a non-blank card.  I asked earlier for you to research the 
+appearance of a punch card containing object code.  Please update the binary example to show this. 
+---
+you can look at a zebra stripe card, but that is not an example of normal object code.  Ideally you would find an image 
+showing IBM 1130 Assembler object ouput, or a similar generation, say S/360, showing object (binary) code. 
+---
+you can research how object code (binary) is encoded on a punch card.  Since there are 12 holes per column, that is more 
+than enough to encode 8 bits. 
+---
+You can read about keypunches, but they were not used to create object decks.  A card reader punch (e.g., IBM 1442) would be
+ used by the assembler program to read a source deck and then punch out an object deck. 
+---
+No, your attempt to show a binary card is incorrect--it doesn't use all the rows.  I've added an example of an actual binary
+ punch card to images/binary-card.png; study that and make the binary example more like that (or exactly like that). 
+---
+Okay, ensure that your new 160 byte binary file format works for both saving and loading text and binary cards.  Add a test 
+for this: type text, save the card, clear the card, load the card--is it the same?  generate the binary example, save the 
+card, clear the card, load the (binary) card==is it the same? 
+---
+so, I researched this a bit and added my results to docs/research.txt so take a look at that.  Your 160 byte per card file 
+  encoding is incorrect.  Actual encoding of a binary card would take 108 bytes.  Implement that for accuracy.  This code may 
+  be reused in a system that actually emulates an IBM 1130, its assembler, its IBM 1442 card punch, and the actual deck it 
+  produced (as well as disk files it stored).  
+---
+So the binary card image only uses 72 columns? What are the 8 remaining columns used for. If the card was copied to an IBM 1130 disk cartridge, would it be 108 or 160 bytes? And vice versa, if object records were written to disk and later punched out, would the cards use 72 or all 80 columns?
+
+
+
+
+Show thinking
+That's a great series of questions. You're correct to focus on those 8 columns and the byte count—it's the key to how these systems worked.
+
+What the 8 Remaining Columns (73-80) Were For
+You are correct, the binary data only used columns 1-72.
+
+The remaining 8 columns, 73-80, were used for human-readable identification and sequence numbering.
+
+Format: These 8 columns were punched in standard EBCDIC (character) format, not binary.
+
+Purpose: The entire system was designed to be robust against human error. If you dropped a 500-card object deck, it was a catastrophe. The sequence numbers were your only hope.
+
+Typical Layout:
+
+Deck ID (e.g., Cols 73-75): A 3 or 4-character ID for the program (e.g., ASM for the Assembler, FCL for a FORTRAN-compiled program).
+
+Sequence Number (e.g., Cols 76-80): A 4 or 5-digit number, usually incremented by 10s (00010, 00020, 00030...), so you could insert patched cards later without re-punching the whole deck.
+
+If you look at an 1130 binary card, you'll see the dense, unreadable "zebra stripes" on the left (cols 1-72) and normal, human-readable numbers on the far right (cols 73-80).
+
+Disk Storage: 108 or 160 Bytes?
+When a binary card was copied to an object file on the 1130 disk cartridge, the record stored was 108 bytes.
+
+Here is the breakdown of the record types, which resolves the confusion:
+
+EBCDIC (Source) Record: 80 columns of 1 character each = 80 bytes. On the 16-bit 1130, this was stored as a 40-word logical record.
+
+Binary (Object) Record: 72 columns of binary data = 864 bits = 54 words. This was stored as a 54-word logical record.
+
+54 words×2 bytes/word=108 bytes
+
+The 8-byte sequence number from columns 73-80 was discarded when writing to disk. The disk file system (DMS) managed its own sectors and file structure, making the card sequence numbers irrelevant for storage.
+
+Your "160 bytes" (which would be 80 words) would be for a different, non-standard "full 80-column binary" read. The standard 1130 object format was always 108 bytes (54 words).
+
+Punching from Disk back to Cards
+When you reversed the process (e.g., using the DUP *PUNCH command to punch an object file from disk), the system would use all 80 columns.
+
+Here's how it worked:
+
+The Disk Utility Program (DUP) would read the first 108-byte (54-word) object record from the disk file.
+
+It translated that 108-byte data block back into the 864-bit "zebra stripe" punch pattern.
+
+It punched this binary data into columns 1-72.
+
+It generated a new deck ID (which you specified) and a new sequence number (starting from 00010).
+
+It punched this new 8-byte ID and sequence number as regular EBCDIC characters into columns 73-80.
+
+It would then repeat this process for every 108-byte record in the file, creating a brand new, perfectly sequenced, human-readable object deck.
+---
+yes, but I've researched further and found that while the binary part of the object deck used only columns 1-72, the other 8
+ columns were also used for a sequence number, so our binary example should actually include that.  Read the updated 
+docs/research.txt for details about that.  Update the UI card binary example to match the images/binary-card.png taking this 
+into account.  You can stick with a 108 byte file image, and an implied sequence number.  Update the save/load binary card 
+test to save 72 columns (108 bytes in the downloaded file) and load 72 columns from that file, and generate a sequence number 
+for the remaining columns, and then test that the original (before save) and re-loaded (after clear and load) matches the 1st 
+72 columns, ignoring the next 8 columns, but warning if the are blank (i.e., load should add a non-blank sequence number). 
+---
+alternatively, in the sample card I provided, the sequence numbers are blank, so for simplicity, do not save the 72-80 
+column nor load it, nor generate a sequence number; therefor the tests should be: (A) punch an 80 column text card of 
+alphanumeric data, save it to file, clear, load it, compare 80 columns match and (B) create a 72 column binary card, save it, 
+clear, load it, and compare 80 columns (the last 8 will be blank before/after save/load) 
+---
+do not use python; this Rust CLI should serve the app 
+---
+no, things have regressed.  The clear button stopped working (add tests for this and fix it).  This is on both the manual 
+input tab and save/load tab.  The Examples Object Deck Card (Binary) button doesn't work on the first click, it clears the 
+card on the first click and generates the binary card on the 2nd click (should not clear, should gen binary card on first 
+click); Add a note after loading a card that it will not contain printed values on the top. 
+---
+clicking binary example button just clears the screen.  clicking it again works.  It should not clear, it should just show a
+ binary example.  The clear buttons now do work.  The load example (text|binary) buttons should do an implicit clear not 
+require multiple clicks. 
+---
+checkpoint this version after quality checks and document (screenshot) updates--git add, commit (details), push 
+---
+minor issue: when loading a text card the legend at the top of the card says Binary.  It might be simpler to remove this 
+legend entirely than trying to get it to be correct in all cases.    Also, for the load/save tab view, take the 3 sections 
+which are laid out vertically and lay them out horizontally, (save/download section takes 2/5ths of the screen width, 
+load/file-chooser section 2/5ths wide, and clear 1/5th. 
+---
+  the subheadings under the tabs are redundant--remove them, pl
+---
