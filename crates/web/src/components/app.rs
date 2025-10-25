@@ -13,29 +13,40 @@ pub fn app() -> Html {
     let card = use_state(|| CorePunchCard::new(CardType::Text));
     let active_tab = use_state(|| "manual".to_string());
 
-    // Update card when text changes
+    // Update card when text changes (only for Text cards, not Binary)
     {
         let text_value = text_value.clone();
         let card = card.clone();
 
         use_effect_with(text_value.clone(), move |text| {
-            let new_card = CorePunchCard::from_text(text);
-            card.set(new_card);
+            // Only update if current card is Text type (don't overwrite Binary cards)
+            if card.card_type() == CardType::Text {
+                let new_card = CorePunchCard::from_text(text);
+                card.set(new_card);
+            }
             || ()
         });
     }
 
     let on_text_change = {
         let text_value = text_value.clone();
+        let card = card.clone();
         Callback::from(move |new_text: String| {
-            text_value.set(new_text);
+            // When user types, ensure we're in text mode
+            text_value.set(new_text.clone());
+            // Force update to text card
+            card.set(CorePunchCard::from_text(&new_text));
         })
     };
 
     let on_load_source_example = {
         let text_value = text_value.clone();
+        let card = card.clone();
         Callback::from(move |_| {
-            text_value.set("START DC   0             IBM 1130 EXAMPLE".to_string());
+            // Load text example
+            let example_text = "START DC   0             IBM 1130 EXAMPLE".to_string();
+            text_value.set(example_text.clone());
+            card.set(CorePunchCard::from_text(&example_text));
         })
     };
 
@@ -43,31 +54,35 @@ pub fn app() -> Html {
         let text_value = text_value.clone();
         let card = card.clone();
         Callback::from(move |_| {
-            text_value.set(String::new());
+            // Load binary example - set card first, then clear text
             let object_card = ibm1130::generate_example_object();
             card.set(object_card);
+            text_value.set(String::new());
         })
     };
 
     let on_clear = {
         let text_value = text_value.clone();
+        let card = card.clone();
         Callback::from(move |_| {
+            // Clear both text_value and card state directly
             text_value.set(String::new());
+            card.set(CorePunchCard::new(CardType::Text));
         })
     };
 
     let on_save = {
         let card = card.clone();
         Callback::from(move |_| {
-            // Convert card to EBCDIC format (80 bytes, 1 per column)
-            let ebcdic_data = card.to_ebcdic();
+            // Convert card to binary format (160 bytes, 2 per column, all 12 rows)
+            let binary_data = card.to_binary();
 
             // Create a blob and download it
             if let Some(window) = web_sys::window()
                 && let Some(document) = window.document()
             {
                 // Create blob
-                let array = js_sys::Uint8Array::from(&ebcdic_data[..]);
+                let array = js_sys::Uint8Array::from(&binary_data[..]);
                 let blob_parts = js_sys::Array::new();
                 blob_parts.push(&array);
 
@@ -110,9 +125,10 @@ pub fn app() -> Html {
                         let mut bytes = vec![0u8; array.length() as usize];
                         array.copy_to(&mut bytes);
 
-                        if bytes.len() == 80 {
-                            // Load as EBCDIC format (80 bytes, 1 per column)
-                            let new_card = CorePunchCard::from_ebcdic(&bytes);
+                        if bytes.len() == 108 || bytes.len() == 80 {
+                            // Load as binary format (108 bytes = IBM 1130 format, or 80 bytes = legacy)
+                            // from_binary() handles both 108-byte and 80-byte formats
+                            let new_card = CorePunchCard::from_binary(&bytes);
                             card.set(new_card);
                             text_value.set(String::new());
                         }
@@ -213,11 +229,11 @@ pub fn app() -> Html {
                             <h2>{ "Save/Load Punch Card" }</h2>
 
                             <h3>{ "Save Card" }</h3>
-                            <p>{ "Download the current punch card as an 80-byte binary file:" }</p>
+                            <p>{ "Download the current punch card as a 108-byte binary file (IBM 1130 format: 72 columns × 12 rows, columns 73-80 not saved):" }</p>
                             <button onclick={on_save}>{ "Download Card (.bin)" }</button>
 
                             <h3 style="margin-top: 20px;">{ "Load Card" }</h3>
-                            <p>{ "Upload an 80-byte binary file to load as a punch card:" }</p>
+                            <p>{ "Upload a binary file to load as a punch card (108 bytes IBM 1130 format, or legacy 80-byte format):" }</p>
                             <div class="file-upload-container">
                                 <input
                                     type="file"
@@ -225,6 +241,9 @@ pub fn app() -> Html {
                                     onchange={on_file_change}
                                 />
                             </div>
+                            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                                <strong>{ "Note:" }</strong>{ " Loaded binary cards will not display printed characters at the top of the card, only the punch hole patterns." }
+                            </p>
 
                             <h3 style="margin-top: 20px;">{ "Clear Card" }</h3>
                             <p>{ "Reset the punch card to blank:" }</p>
