@@ -3,6 +3,7 @@
 // This library provides the core functionality for simulating IBM punch cards,
 // including Hollerith encoding, punch card data structures, and IBM 1130 format support.
 
+pub mod ebcdic;
 pub mod hollerith;
 pub mod ibm1130;
 pub mod punch_card;

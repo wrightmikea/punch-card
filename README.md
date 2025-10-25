@@ -11,18 +11,23 @@ An interactive web-based IBM 1130 punch card simulator built with Yew (Rust/WASM
 ### Current (MVP)
 - ✅ **Interactive Punch Card Display** - SVG-based 80-column card with authentic cream color
 - ✅ **Hollerith Encoding** - Complete IBM 029 character set (64 characters)
+- ✅ **EBCDIC Support** - Save/load cards in 80-byte EBCDIC format
 - ✅ **Character Printing** - Characters printed at top of card (IBM 029 feature)
+- ✅ **Pre-printed Digits** - Authentic 0-9 row markers in light gray
+- ✅ **Column Index Rows** - Small font index rows between 0/1 and 9/bottom
 - ✅ **Real-time Punching** - See holes appear as you type
 - ✅ **Column Highlighting** - Visual indicator of current column
-- ✅ **IBM 1130 Examples** - Load sample assembler source code
+- ✅ **Corner Cut** - Transparent corner cut matching authentic cards
+- ✅ **Centered Display** - Card centered with light blue margins
+- ✅ **IBM 1130 Examples** - Load sample assembler source and object deck code
 - ✅ **Text Mode** - Type up to 80 characters
-- ✅ **Test-Driven Development** - 43 passing unit tests for core library
+- ✅ **Binary Mode** - Object deck format with authentic 4:3 punch pattern
+- ✅ **Test-Driven Development** - 49 passing unit tests for core library (100% pass rate)
 
 ### Planned Features
-- 🔄 Binary Mode - Upload 80-byte binary files (object deck format)
-- 🔄 File Upload - Load binary punch card data
 - 🔄 Additional Examples - More IBM 1130 code samples
 - 🔄 CLI Server - Serve app on configurable port
+- 🔄 GitHub Pages deployment
 
 ## Technology Stack
 
@@ -70,7 +75,7 @@ python3 -m http.server 9267
 ### Running Tests
 
 ```bash
-# Run core library tests (43 tests)
+# Run core library tests (49 tests)
 cargo test --package punch-card-core
 
 # All tests should pass with 100% success rate
@@ -82,14 +87,17 @@ cargo test --package punch-card-core
 punch-card/
 ├── crates/
 │   ├── core/           # Core Rust library
-│   │   ├── hollerith.rs    # Hollerith encoding (43 tests)
-│   │   ├── punch_card.rs   # Card data structures
-│   │   └── ibm1130.rs      # IBM 1130 formats
+│   │   ├── hollerith.rs    # Hollerith encoding (26 tests)
+│   │   ├── ebcdic.rs       # EBCDIC encoding (6 tests)
+│   │   ├── punch_card.rs   # Card data structures (13 tests)
+│   │   ├── ibm1130.rs      # IBM 1130 formats (4 tests)
+│   │   └── lib.rs          # Module exports
 │   ├── web/            # Yew WASM application
 │   │   ├── components/     # React-like components
 │   │   │   ├── app.rs          # Main app
 │   │   │   ├── punch_card.rs   # SVG card display
-│   │   │   └── text_input.rs   # Input component
+│   │   │   ├── text_input.rs   # Input component
+│   │   │   └── tabs.rs         # Tab components
 │   │   ├── index.html      # HTML entry point
 │   │   └── styles.css      # Application styles
 │   └── cli/            # CLI server (planned)
@@ -98,6 +106,7 @@ punch-card/
 ├── images/
 │   ├── screenshot.png      # Application screenshot
 │   └── punchcard.png       # Reference image
+├── LICENSE                 # MIT License
 └── README.md               # This file
 ```
 
@@ -131,8 +140,9 @@ The example assembler source card follows IBM 1130 conventions:
 
 1. **Type Text**: Enter up to 80 characters in the input field
 2. **Watch It Punch**: See the card update in real-time with Hollerith encoding
-3. **Load Example**: Click "Load Example" to see an IBM 1130 assembler instruction
-4. **Clear Card**: Click "Clear Card" to reset and start over
+3. **Load Examples**: Click "Assembler Source Card" or "Object Deck Card" to see IBM 1130 formats
+4. **Save/Load**: Download cards as 80-byte EBCDIC files or upload previously saved cards
+5. **Clear Card**: Click "Clear Card" to reset and start over
 
 ### Character Support
 
@@ -162,10 +172,11 @@ This project follows **Test-Driven Development (TDD)**:
 3. Refactor for quality
 
 **Test Coverage:**
-- Hollerith encoding: 20 tests
-- Punch card operations: 15 tests
-- IBM 1130 formats: 8 tests
-- **Total: 43 passing tests**
+- Hollerith encoding: 26 tests
+- EBCDIC encoding: 6 tests
+- Punch card operations: 13 tests
+- IBM 1130 formats: 4 tests
+- **Total: 49 passing tests (100% pass rate)**
 
 ## Documentation
 
@@ -186,12 +197,12 @@ Requires WebAssembly support:
 
 See [docs/implementation.md](./docs/implementation.md) for the complete roadmap:
 
-- Binary mode for object decks
-- File upload for 80-byte binary files
 - CLI server with port configuration
 - GitHub Pages deployment
 - Additional IBM 1130 examples
 - Mobile responsive design improvements
+- Print functionality
+- Card deck management (multiple cards)
 
 ## Contributing
 

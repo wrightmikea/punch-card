@@ -59,31 +59,15 @@ pub fn app() -> Html {
     let on_save = {
         let card = card.clone();
         Callback::from(move |_| {
-            // Convert card to 80-byte binary format
-            let mut binary_data = Vec::with_capacity(80);
-            for col_idx in 0..80 {
-                if let Some(column) = card.get_column(col_idx) {
-                    let punches = column.punches.as_array();
-                    let mut byte: u8 = 0;
-                    // Pack the 12 punch positions into a byte
-                    // Use the lower 8 bits for rows 4-11
-                    for (idx, &punch) in punches.iter().enumerate().take(8).skip(4) {
-                        if punch {
-                            byte |= 1 << (idx - 4);
-                        }
-                    }
-                    binary_data.push(byte);
-                } else {
-                    binary_data.push(0);
-                }
-            }
+            // Convert card to EBCDIC format (80 bytes, 1 per column)
+            let ebcdic_data = card.to_ebcdic();
 
             // Create a blob and download it
             if let Some(window) = web_sys::window()
                 && let Some(document) = window.document()
             {
                 // Create blob
-                let array = js_sys::Uint8Array::from(&binary_data[..]);
+                let array = js_sys::Uint8Array::from(&ebcdic_data[..]);
                 let blob_parts = js_sys::Array::new();
                 blob_parts.push(&array);
 
@@ -117,10 +101,9 @@ pub fn app() -> Html {
                 let card = card.clone();
 
                 wasm_bindgen_futures::spawn_local(async move {
-                    let array_buffer =
-                        wasm_bindgen_futures::JsFuture::from(file.array_buffer())
-                            .await
-                            .ok();
+                    let array_buffer = wasm_bindgen_futures::JsFuture::from(file.array_buffer())
+                        .await
+                        .ok();
 
                     if let Some(buffer) = array_buffer {
                         let array = js_sys::Uint8Array::new(&buffer);
@@ -128,7 +111,8 @@ pub fn app() -> Html {
                         array.copy_to(&mut bytes);
 
                         if bytes.len() == 80 {
-                            let new_card = CorePunchCard::from_binary(&bytes);
+                            // Load as EBCDIC format (80 bytes, 1 per column)
+                            let new_card = CorePunchCard::from_ebcdic(&bytes);
                             card.set(new_card);
                             text_value.set(String::new());
                         }

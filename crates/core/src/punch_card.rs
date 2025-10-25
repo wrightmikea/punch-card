@@ -2,6 +2,7 @@
 //
 // Data structures and operations for IBM punch cards
 
+use crate::ebcdic::{ebcdic_to_hollerith, hollerith_to_ebcdic};
 use crate::hollerith::{HollerithCode, char_to_hollerith, hollerith_to_char};
 use serde::{Deserialize, Serialize};
 
@@ -94,26 +95,115 @@ impl PunchCard {
         card
     }
 
-    /// Create a binary card from raw bytes (max 80 bytes)
-    /// Each byte represents 8 bits that map to specific punch patterns
+    /// Create a binary card from raw bytes (80 or 160 bytes)
+    ///
+    /// Supports two formats:
+    /// - 80 bytes: Each byte encodes 8 punch rows (first 8 positions), rows 8-11 are lost (lossy)
+    /// - 160 bytes: Two bytes per column encode all 12 punch rows (full fidelity)
+    ///
+    /// Array layout: [12, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     pub fn from_binary(data: &[u8]) -> Self {
         let mut card = PunchCard::new(CardType::Binary);
 
-        // For now, create a simple mapping: each byte's bits become punches
-        // This is a simplified version; real IBM 1130 used 4:3 conversion
-        for (i, &byte) in data.iter().take(80).enumerate() {
-            let mut rows = Vec::new();
+        if data.len() >= 160 {
+            // 160-byte format: 2 bytes per column, all 12 rows
+            for i in 0..80 {
+                let idx = i * 2;
+                let byte1 = data[idx];
+                let byte2 = if idx + 1 < data.len() {
+                    data[idx + 1]
+                } else {
+                    0
+                };
+                let word = ((byte2 as u16) << 8) | (byte1 as u16);
 
-            // Map bits to rows (bit 0-7 -> rows 0-7)
-            // Note: This is a simplified encoding for demonstration
-            for bit in 0..8 {
-                if (byte & (1 << bit)) != 0 {
-                    rows.push(bit);
+                // Convert bit pattern to array format
+                // bit 0 -> index 0 (row 12), bit 1 -> index 1 (row 11), ..., bit 11 -> index 11 (row 9)
+                let punch_array = (0..12)
+                    .map(|bit| (word & (1 << bit)) != 0)
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap();
+                card.columns[i] = Column::from_hollerith(HollerithCode::from_array(punch_array));
+            }
+        } else {
+            // 80-byte format: 1 byte per column, only first 8 array positions (legacy/lossy)
+            for (i, &byte) in data.iter().take(80).enumerate() {
+                let mut punch_array = [false; 12];
+                for (bit, punch) in punch_array.iter_mut().enumerate().take(8) {
+                    *punch = (byte & (1 << bit)) != 0;
+                }
+                card.columns[i] = Column::from_hollerith(HollerithCode::from_array(punch_array));
+            }
+        }
+        card
+    }
+
+    /// Convert the card to binary format (160 bytes = 2 bytes per column)
+    /// Preserves all 12 punch rows with full fidelity
+    ///
+    /// Array layout: [12, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    /// Bit mapping: bit 0 = row 12, bit 1 = row 11, bit 2 = row 0, ..., bit 11 = row 9
+    pub fn to_binary(&self) -> Vec<u8> {
+        let mut data = Vec::with_capacity(160);
+
+        for column in &self.columns {
+            let punches = column.punches.as_array();
+            let mut word: u16 = 0;
+
+            // Encode all 12 array positions as bits 0-11
+            for (bit, &is_punched) in punches.iter().enumerate() {
+                if is_punched {
+                    word |= 1 << bit;
                 }
             }
 
-            card.columns[i] = Column::from_hollerith(HollerithCode::new(rows));
+            // Store as little-endian (byte1 = low byte, byte2 = high byte)
+            data.push((word & 0xFF) as u8);
+            data.push(((word >> 8) & 0xFF) as u8);
         }
+
+        data
+    }
+
+    /// Convert the card to EBCDIC format (80 bytes = 1 byte per column)
+    /// Standard format for IBM punch card data interchange
+    ///
+    /// Each column's Hollerith punch pattern is converted to its EBCDIC character code
+    pub fn to_ebcdic(&self) -> Vec<u8> {
+        let mut data = Vec::with_capacity(80);
+
+        for column in &self.columns {
+            let ebcdic_byte = hollerith_to_ebcdic(&column.punches);
+            data.push(ebcdic_byte);
+        }
+
+        data
+    }
+
+    /// Create a card from EBCDIC format (80 bytes = 1 byte per column)
+    ///
+    /// Each byte is an EBCDIC character code that is converted to its Hollerith punch pattern
+    pub fn from_ebcdic(data: &[u8]) -> Self {
+        let mut card = PunchCard::new(CardType::Text);
+
+        for (i, &ebcdic_byte) in data.iter().take(80).enumerate() {
+            let hollerith = ebcdic_to_hollerith(ebcdic_byte);
+            // Determine the printed character from the EBCDIC code
+            let printed_char = match ebcdic_byte {
+                0x40 => Some(' '),
+                0xF0..=0xF9 => Some((b'0' + (ebcdic_byte - 0xF0)) as char),
+                0xC1..=0xC9 => Some((b'A' + (ebcdic_byte - 0xC1)) as char),
+                0xD1..=0xD9 => Some((b'J' + (ebcdic_byte - 0xD1)) as char),
+                0xE2..=0xE9 => Some((b'S' + (ebcdic_byte - 0xE2)) as char),
+                _ => None,
+            };
+            card.columns[i] = Column {
+                punches: hollerith,
+                printed_char,
+            };
+        }
+
         card
     }
 
