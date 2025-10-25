@@ -20,16 +20,28 @@ pub fn generate_example_source() -> PunchCard {
 
 /// Generate an example IBM 1130 object deck card
 ///
-/// This would be a binary card representing compiled machine code
+/// IBM 1130 binary format:
+/// - Columns 1-72: Binary data (all 12 rows used)
+/// - Columns 73-80: Sequence number / card ID
 pub fn generate_example_object() -> PunchCard {
-    // Create a binary card with example data
-    // In reality, this would be actual machine code from the assembler
-    let example_data = vec![
-        0xC0, 0x00, 0x10, 0x00, // Example: Load instruction
-        0x48, 0x00, 0x20, 0x00, // Example: Add instruction
-        0x50, 0x00, 0x30, 0x00, // Example: Store instruction
-        0x00, 0x00, 0x00, 0x00, // Padding
-    ];
+    // Fill columns 1-72 with example binary data pattern
+    // This represents compiled machine code
+    let mut example_data = Vec::new();
+
+    // Create a realistic pattern - alternating instruction patterns
+    // Using 8-bit values that will create interesting punch patterns
+    for i in 0..72 {
+        let pattern = match i % 4 {
+            0 => 0xF0, // 11110000 - Pattern 1
+            1 => 0xCC, // 11001100 - Pattern 2
+            2 => 0xAA, // 10101010 - Pattern 3
+            _ => 0x99, // 10011001 - Pattern 4
+        };
+        example_data.push(pattern);
+    }
+
+    // Add sequence number "00000001" in columns 73-80
+    example_data.extend_from_slice(b"00000001");
 
     PunchCard::from_binary(&example_data)
 }

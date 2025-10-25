@@ -2,6 +2,7 @@
 
 use punch_card_core::ibm1130;
 use punch_card_core::punch_card::{CardType, PunchCard as CorePunchCard};
+use wasm_bindgen::JsCast;
 use yew::prelude::*;
 
 use super::{PunchCard, Tab, TabPanel, Tabs, TextInput};
@@ -55,6 +56,88 @@ pub fn app() -> Html {
         })
     };
 
+    let on_save = {
+        let card = card.clone();
+        Callback::from(move |_| {
+            // Convert card to 80-byte binary format
+            let mut binary_data = Vec::with_capacity(80);
+            for col_idx in 0..80 {
+                if let Some(column) = card.get_column(col_idx) {
+                    let punches = column.punches.as_array();
+                    let mut byte: u8 = 0;
+                    // Pack the 12 punch positions into a byte
+                    // Use the lower 8 bits for rows 4-11
+                    for (idx, &punch) in punches.iter().enumerate().take(8).skip(4) {
+                        if punch {
+                            byte |= 1 << (idx - 4);
+                        }
+                    }
+                    binary_data.push(byte);
+                } else {
+                    binary_data.push(0);
+                }
+            }
+
+            // Create a blob and download it
+            if let Some(window) = web_sys::window()
+                && let Some(document) = window.document()
+            {
+                // Create blob
+                let array = js_sys::Uint8Array::from(&binary_data[..]);
+                let blob_parts = js_sys::Array::new();
+                blob_parts.push(&array);
+
+                if let Ok(blob) = web_sys::Blob::new_with_u8_array_sequence(&blob_parts)
+                    && let Ok(url) = web_sys::Url::create_object_url_with_blob(&blob)
+                {
+                    // Create download link
+                    if let Ok(element) = document.create_element("a")
+                        && let Ok(a) = element.dyn_into::<web_sys::HtmlAnchorElement>()
+                    {
+                        a.set_href(&url);
+                        a.set_download("punchcard.bin");
+                        a.click();
+                        web_sys::Url::revoke_object_url(&url).ok();
+                    }
+                }
+            }
+        })
+    };
+
+    let on_file_change = {
+        let text_value = text_value.clone();
+        let card = card.clone();
+        Callback::from(move |e: web_sys::Event| {
+            let input = e.target_dyn_into::<web_sys::HtmlInputElement>();
+            if let Some(input) = input
+                && let Some(files) = input.files()
+                && let Some(file) = files.get(0)
+            {
+                let text_value = text_value.clone();
+                let card = card.clone();
+
+                wasm_bindgen_futures::spawn_local(async move {
+                    let array_buffer =
+                        wasm_bindgen_futures::JsFuture::from(file.array_buffer())
+                            .await
+                            .ok();
+
+                    if let Some(buffer) = array_buffer {
+                        let array = js_sys::Uint8Array::new(&buffer);
+                        let mut bytes = vec![0u8; array.length() as usize];
+                        array.copy_to(&mut bytes);
+
+                        if bytes.len() == 80 {
+                            let new_card = CorePunchCard::from_binary(&bytes);
+                            card.set(new_card);
+                            text_value.set(String::new());
+                        }
+                    }
+                });
+            }
+        })
+    };
+
     let on_tab_change = {
         let active_tab = active_tab.clone();
         Callback::from(move |tab_id: String| {
@@ -79,7 +162,7 @@ pub fn app() -> Html {
         },
         Tab {
             id: "load".to_string(),
-            label: "Load".to_string(),
+            label: "Save/Load".to_string(),
         },
         Tab {
             id: "about".to_string(),
@@ -118,7 +201,7 @@ pub fn app() -> Html {
                                 max_length={80}
                             />
                             <div style="margin-top: 15px;">
-                                <button onclick={on_clear}>{ "Clear Card" }</button>
+                                <button onclick={on_clear.clone()}>{ "Clear Card" }</button>
                             </div>
                         </TabPanel>
 
@@ -141,22 +224,27 @@ pub fn app() -> Html {
                             </div>
                         </TabPanel>
 
-                        // Tab C: Load
+                        // Tab C: Save/Load
                         <TabPanel id="load" active_tab={(*active_tab).clone()}>
-                            <h2>{ "Load from File" }</h2>
+                            <h2>{ "Save/Load Punch Card" }</h2>
+
+                            <h3>{ "Save Card" }</h3>
+                            <p>{ "Download the current punch card as an 80-byte binary file:" }</p>
+                            <button onclick={on_save}>{ "Download Card (.bin)" }</button>
+
+                            <h3 style="margin-top: 20px;">{ "Load Card" }</h3>
                             <p>{ "Upload an 80-byte binary file to load as a punch card:" }</p>
                             <div class="file-upload-container">
-                                <label for="file-input">{ "Choose file (80 bytes):" }</label>
                                 <input
-                                    id="file-input"
                                     type="file"
                                     accept=".bin,.dat,.card"
-                                    disabled=true
+                                    onchange={on_file_change}
                                 />
-                                <p style="margin-top: 10px; color: #666; font-style: italic;">
-                                    { "File upload functionality coming soon" }
-                                </p>
                             </div>
+
+                            <h3 style="margin-top: 20px;">{ "Clear Card" }</h3>
+                            <p>{ "Reset the punch card to blank:" }</p>
+                            <button onclick={on_clear.clone()}>{ "Clear Card" }</button>
                         </TabPanel>
 
                         // Tab D: About

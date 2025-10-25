@@ -24,10 +24,23 @@ warp = "0.3"
 
 # Yew dependencies
 yew = { version = "0.21", features = ["csr"] }
-web-sys = { version = "0.3", features = ["File", "FileReader", "HtmlInputElement"] }
+web-sys = { version = "0.3", features = [
+    "File",
+    "FileReader",
+    "HtmlInputElement",
+    "Blob",
+    "BlobPropertyBag",
+    "Url",
+    "HtmlAnchorElement",
+    "Window",
+    "Document",
+    "Event",
+    "EventTarget",
+] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 gloo-file = "0.3"
+js-sys = "0.3"
 
 # Testing
 wasm-bindgen-test = "0.3"
